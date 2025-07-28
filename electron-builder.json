@@ -1,0 +1,20 @@
+{
+  "appId": "com.daemonw.easycut",
+  "productName": "Easy Cut",
+  "copyright": "MIT license",
+  "directories": {
+    "app": "apps/electron-app",
+    "output": "dist"
+  },
+  "asar": true,
+  "asarUnpack": ["bin"],
+  "mac": {
+    "target": "dir",
+    "files": ["bin/darwin"]
+  },
+  "win": {
+    "target": "portable",
+    "files": ["bin/win64"]
+  },
+  "files": ["**/*", "!bin"]
+}

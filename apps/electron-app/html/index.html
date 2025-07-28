@@ -1,0 +1,42 @@
+<script>
+  window.$ = window.jQuery = require("./lib/jquery-3.3.1.min.js");
+</script>
+<script src="lib/timeline.js"></script>
+<script src="lib/vue.min.js"></script>
+<script src="lib/customLabels.js"></script>
+<link rel="stylesheet" type="text/css" href="lib/timeline.css" />
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="fonts/iconfont/material-icons.css"
+/>
+<link rel="stylesheet" type="text/css" href="ui/ui.css" />
+<link rel="stylesheet" type="text/css" href="ui/tables.css" />
+<script src="ui/ui.js"></script>
+
+<div id="layout">
+  <div id="toolbar" load="ui/toolbar.html"></div>
+  <div id="mainview">
+    <div id="sources-cont" load="ui/sources.html"></div>
+    <div id="preview-box" load="ui/preview-box.html"></div>
+    <div id="inspector-cont" load="ui/inspector.html"></div>
+  </div>
+  <div id="timeview">
+    <div id="progress" load="ui/progress.html"></div>
+    <div id="timelinecont"></div>
+  </div>
+</div>
+
+<script>
+  const { ipcRenderer, clipboard } = require("electron");
+  const remote = require("@electron/remote");
+  const { app, dialog, BrowserWindow } = remote;
+  const os = require("os");
+  const fs = require("fs");
+  const path = require("path");
+</script>
+<script src="app.js"></script>
+<script src="dropfiles.js"></script>
+<script src="timelineManager.js"></script>
+<script src="managers.js"></script>
+<script src="preview.js"></script>

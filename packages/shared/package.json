@@ -1,0 +1,16 @@
+{
+  "name": "@easy-cut/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities and constants for Easy Cut",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Building shared package...'",
+    "dev": "echo 'Shared package in dev mode...'",
+    "clean": "rm -rf dist",
+    "lint": "echo 'Linting shared package...'"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}

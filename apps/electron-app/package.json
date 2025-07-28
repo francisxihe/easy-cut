@@ -1,0 +1,47 @@
+{
+  "name": "electron-app",
+  "version": "1.0.0",
+  "description": "Easy Cut - FFmpeg video editor",
+  "main": "dist-electron/main.js",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron:dev": "unset ALL_PROXY && vite",
+    "electron:build": "vite build && electron-builder",
+    "type-check": "tsc --noEmit"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/less": "^3.0.8",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "clsx": "^2.1.1",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^25.0.0",
+    "electron-builder": "^24.0.0",
+    "less": "^4.4.0",
+    "tailwindcss": "^4.1.11",
+    "vite": "^5.0.8",
+    "vite-plugin-electron": "^0.15.5",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "@arco-design/web-react": "^2.66.1",
+    "@easy-cut/shared": "workspace:*",
+    "@electron/remote": "^2.1.2",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "fluent-ffmpeg": "^2.1.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.4.7"
+  }
+}
