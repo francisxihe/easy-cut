@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useReducer, useRef, useEffect } from "react";
 
+// 播放源类型
+type PlaybackSource = 'sources' | 'timeline';
+
 // 播放状态类型
 interface PlaybackState {
   currentTime: number;
@@ -9,6 +12,8 @@ interface PlaybackState {
   muted: boolean;
   playbackRate: number;
   videoError: string | null;
+  playbackSource: PlaybackSource; // 当前播放源
+  timelinePosition: number; // 时间轴播放位置
 }
 
 // 播放操作类型
@@ -20,6 +25,8 @@ type PlaybackAction =
   | { type: "SET_MUTED"; payload: boolean }
   | { type: "SET_PLAYBACK_RATE"; payload: number }
   | { type: "SET_VIDEO_ERROR"; payload: string | null }
+  | { type: "SET_PLAYBACK_SOURCE"; payload: PlaybackSource }
+  | { type: "SET_TIMELINE_POSITION"; payload: number }
   | { type: "RESET_STATE" };
 
 // 播放上下文类型
@@ -34,11 +41,15 @@ interface PlaybackContextType {
   setMuted: (muted: boolean) => void;
   setPlaybackRate: (rate: number) => void;
   setVideoError: (error: string | null) => void;
+  setPlaybackSource: (source: PlaybackSource) => void;
+  setTimelinePosition: (position: number) => void;
   resetState: () => void;
   // 播放控制函数
   play: () => void;
   pause: () => void;
   handlePlayPause: () => void;
+  playFromSources: () => void; // Sources播放
+  playFromTimeline: (position?: number) => void; // Timeline播放
   seek: (time: number) => void;
   // 事件处理函数
   handleTimeUpdate: () => void;
@@ -63,6 +74,8 @@ const initialState: PlaybackState = {
   muted: false,
   playbackRate: 1,
   videoError: null,
+  playbackSource: 'sources',
+  timelinePosition: 0,
 };
 
 function playbackReducer(state: PlaybackState, action: PlaybackAction): PlaybackState {
@@ -81,6 +94,10 @@ function playbackReducer(state: PlaybackState, action: PlaybackAction): Playback
       return { ...state, playbackRate: action.payload };
     case "SET_VIDEO_ERROR":
       return { ...state, videoError: action.payload };
+    case "SET_PLAYBACK_SOURCE":
+      return { ...state, playbackSource: action.payload };
+    case "SET_TIMELINE_POSITION":
+      return { ...state, timelinePosition: action.payload };
     case "RESET_STATE":
       return initialState;
     default:
@@ -123,6 +140,14 @@ export const PlaybackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     dispatch({ type: "SET_VIDEO_ERROR", payload: error });
   };
 
+  const setPlaybackSource = (source: PlaybackSource) => {
+    dispatch({ type: "SET_PLAYBACK_SOURCE", payload: source });
+  };
+
+  const setTimelinePosition = (position: number) => {
+    dispatch({ type: "SET_TIMELINE_POSITION", payload: position });
+  };
+
   const resetState = () => {
     dispatch({ type: "RESET_STATE" });
   };
@@ -148,6 +173,22 @@ export const PlaybackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } else {
       play();
     }
+  };
+
+  // Sources播放 - 播放当前选中的视频文件
+  const playFromSources = () => {
+    setPlaybackSource('sources');
+    play();
+  };
+
+  // Timeline播放 - 从指定位置播放时间轴
+  const playFromTimeline = (position?: number) => {
+    setPlaybackSource('timeline');
+    if (position !== undefined) {
+      setTimelinePosition(position);
+      seek(position);
+    }
+    play();
   };
 
   const seek = (time: number) => {
@@ -242,10 +283,14 @@ export const PlaybackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setMuted,
     setPlaybackRate,
     setVideoError,
+    setPlaybackSource,
+    setTimelinePosition,
     resetState,
     play,
     pause,
     handlePlayPause,
+    playFromSources,
+    playFromTimeline,
     seek,
     handleTimeUpdate,
     handleLoadedMetadata,

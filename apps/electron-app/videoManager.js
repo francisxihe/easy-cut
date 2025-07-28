@@ -18,6 +18,12 @@ class VideoManager {
   }
 
   checkBinsExist(path1, path2) {
+    // 如果路径为null，说明使用系统PATH中的二进制文件，跳过检查
+    if (path1 === null || path2 === null) {
+      console.log("Using system PATH binaries, skipping binary check");
+      return;
+    }
+    
     if (fs.existsSync(path1) && fs.existsSync(path2)) return;
     else throw new Error("Binary not installed!");
   }

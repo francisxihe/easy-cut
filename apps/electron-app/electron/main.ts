@@ -58,37 +58,45 @@ function initializeBusinessModules() {
 
   // 初始化视频管理器
   try {
-    if (os.platform() === "darwin") {
-      vidManager = new VideoManager(
-        join(appPath, "bin/darwin/ffmpeg"),
-        join(appPath, "bin/darwin/ffprobe"),
-        workdir,
-      );
-    } else if (os.platform() === "win32" && os.arch() === "x64") {
-      vidManager = new VideoManager(
-        join(appPath, "bin/win64/ffmpeg.exe"),
-        join(appPath, "bin/win64/ffprobe.exe"),
-        workdir,
-      );
+    let ffmpegPath, ffprobePath;
+    
+    if (isDev) {
+      // 开发环境：使用系统安装的FFmpeg
+      console.log("Development mode: Using system FFmpeg");
+      ffmpegPath = null; // 让fluent-ffmpeg使用系统PATH中的ffmpeg
+      ffprobePath = null; // 让fluent-ffmpeg使用系统PATH中的ffprobe
     } else {
-      throw new Error(
-        "This platform or architecture is currently not supported.",
-      );
+      // 生产环境：使用打包的二进制文件
+      if (os.platform() === "darwin") {
+        ffmpegPath = join(appPath, "bin/darwin/ffmpeg");
+        ffprobePath = join(appPath, "bin/darwin/ffprobe");
+      } else if (os.platform() === "win32" && os.arch() === "x64") {
+        ffmpegPath = join(appPath, "bin/win64/ffmpeg.exe");
+        ffprobePath = join(appPath, "bin/win64/ffprobe.exe");
+      } else {
+        throw new Error(
+          "This platform or architecture is currently not supported.",
+        );
+      }
     }
+    
+    vidManager = new VideoManager(ffmpegPath, ffprobePath, workdir);
+    
+    // 设置默认渲染方案（只有在vidManager成功创建后才设置）
+    vidManager.scheme = {
+      size: "1280x720",
+      format: ".mp4",
+      codec: "libx264",
+      bitrate: 1000,
+      fps: 24,
+      pad: true,
+    };
   } catch (err: any) {
+    console.error("Error while creating ffmpeg handler:", err);
     dialog.showErrorBox("Error while creating ffmpeg handler:", err.message);
     app.exit(1);
+    return; // 确保不会继续执行
   }
-
-  // 设置默认渲染方案
-  vidManager.scheme = {
-    size: "1280x720",
-    format: ".mp4",
-    codec: "libx264",
-    bitrate: 1000,
-    fps: 24,
-    pad: true,
-  };
 
   // 初始化插件管理器
   pluginMan = new PluginManager();

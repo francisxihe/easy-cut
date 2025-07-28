@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { useVideo } from "../../contexts/VideoContext";
 import type { VideoFile } from "../../contexts/VideoContext";
+import { usePlayback } from "../../contexts/PlaybackContext";
 
 // 源文件面板状态接口
 export interface SourcesPanelState {
@@ -176,6 +177,7 @@ export function SourcesPanelProvider({
 }) {
   const [state, dispatch] = useReducer(sourcesPanelReducer, initialState);
   const { state: videoState, removeVideoFile, selectFile: videoSelectFile, previewFile: videoPreviewFile } = useVideo();
+  const { playFromSources } = usePlayback();
 
   // 同步VideoContext中的文件数据
   useEffect(() => {
@@ -220,7 +222,10 @@ export function SourcesPanelProvider({
 
   // 文件操作
   const previewFile = (fileId: string) => {
-    videoPreviewFile(fileId); // 调用VideoContext的方法
+    videoPreviewFile(fileId, () => {
+      // 从Sources触发播放时，调用playFromSources
+      playFromSources();
+    }); // 调用VideoContext的方法
   };
 
   const duplicateFile = (fileId: string) => {

@@ -24,7 +24,7 @@ const ResizableLayout: React.FC<ResizableLayoutProps> = ({
   }>({
     leftWidth: 250,
     rightWidth: 280,
-    bottomHeight: 200,
+    bottomHeight: 300,
   });
 
   const [isDragging, setIsDragging] = useState<string | null>(null);
@@ -56,7 +56,7 @@ const ResizableLayout: React.FC<ResizableLayoutProps> = ({
           break;
         case "bottom":
           const newHeight = Math.max(
-            150,
+            250,
             Math.min(400, rect.bottom - e.clientY)
           );
           setPanelSizes((prev) => ({ ...prev, bottomHeight: newHeight }));

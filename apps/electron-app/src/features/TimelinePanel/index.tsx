@@ -12,6 +12,7 @@ import {
 import { useTimeline } from "./context";
 import { useTimelineSync } from "./useTimelineSync";
 import { usePlayback } from "../../contexts/PlaybackContext";
+import { useVideo } from "../../contexts/VideoContext";
 
 const { Text } = Typography;
 
@@ -31,8 +32,11 @@ const TimelinePanel: React.FC = () => {
   const { 
     state: playbackState,
     handlePlayPause: playbackHandlePlayPause,
-    seek
+    seek,
+    playFromTimeline
   } = usePlayback();
+  
+  const { state: videoState, selectFile } = useVideo();
   
   // 从TimelineContext获取时间轴数据
   const tracks = timelineState.tracks;
@@ -105,19 +109,55 @@ const TimelinePanel: React.FC = () => {
     // 同步视频播放时间
     seek(clickTime);
   };
+
+  // 处理时间轴播放/暂停
+  const handleTimelinePlayPause = () => {
+    // 获取当前时间轴位置对应的片段
+    const currentClip = getCurrentClipAtPosition(timelineState.position);
+    
+    if (currentClip) {
+      // 检查当前选中的视频文件是否是时间轴上的视频
+      const timelineVideoFile = videoState.workFiles.find(file => file.id === currentClip.sourceFileId);
+      
+      if (timelineVideoFile && videoState.selectedFileId !== timelineVideoFile.id) {
+        // 切换到时间轴对应的视频文件
+        selectFile(timelineVideoFile.id);
+        console.log('切换到时间轴视频:', timelineVideoFile.file);
+      }
+    }
+    
+    // 使用Timeline播放模式
+    if (playbackState.isPlaying) {
+      pause();
+    } else {
+      playFromTimeline(timelineState.position);
+    }
+  };
+
+  // 获取当前位置的片段
+  const getCurrentClipAtPosition = (position: number) => {
+    for (const track of tracks) {
+      for (const clip of track.clips) {
+        if (position >= clip.startTime && position < clip.startTime + clip.duration) {
+          return clip;
+        }
+      }
+    }
+    return null;
+  };
   
   // 播放头拖拽状态
-  const [isDraggingPlayhead, setIsDraggingPlayhead] = React.useState(false);
+  const [isDraggingPlayHead, setIsDraggingPlayHead] = React.useState(false);
   
   // 处理播放头拖拽
-  const handlePlayheadMouseDown = (e: React.MouseEvent) => {
+  const handlePlayHeadMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsDraggingPlayhead(true);
+    setIsDraggingPlayHead(true);
   };
   
   // 处理拖拽过程中的鼠标移动
   const handleMouseMove = React.useCallback((e: MouseEvent) => {
-    if (!isDraggingPlayhead || !timelineRef.current || timelineDuration === 0) return;
+    if (!isDraggingPlayHead || !timelineRef.current || timelineDuration === 0) return;
     
     const rect = timelineRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -126,16 +166,16 @@ const TimelinePanel: React.FC = () => {
     
     setPosition(newTime);
     seek(newTime);
-  }, [isDraggingPlayhead, timelineDuration, setPosition, seek]);
+  }, [isDraggingPlayHead, timelineDuration, setPosition, seek]);
   
   // 处理拖拽结束
   const handleMouseUp = React.useCallback(() => {
-    setIsDraggingPlayhead(false);
+    setIsDraggingPlayHead(false);
   }, []);
   
   // 添加全局鼠标事件监听
   useEffect(() => {
-    if (isDraggingPlayhead) {
+    if (isDraggingPlayHead) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       return () => {
@@ -143,7 +183,7 @@ const TimelinePanel: React.FC = () => {
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDraggingPlayhead, handleMouseMove, handleMouseUp]);
+  }, [isDraggingPlayHead, handleMouseMove, handleMouseUp]);
   
   // 同步视频文件和时间轴数据
   // const { getVideoFileByClipId } = useTimelineSync();
@@ -426,10 +466,10 @@ const TimelinePanel: React.FC = () => {
                 height: `${tracks.reduce((total, track) => total + track.height + 8, 0)}px`,
                 backgroundColor: "var(--color-danger-6)",
                 zIndex: 10,
-                cursor: isDraggingPlayhead ? "grabbing" : "grab",
+                cursor: isDraggingPlayHead ? "grabbing" : "grab",
                 transform: "translateX(-1px)", // 居中对齐
               }}
-              onMouseDown={handlePlayheadMouseDown}
+              onMouseDown={handlePlayHeadMouseDown}
             >
               {/* 播放头顶部的三角形指示器 */}
               <div
@@ -522,8 +562,7 @@ const TimelinePanel: React.FC = () => {
               size="small"
               icon={timelineState.isPlaying ? <IconPause /> : <IconPlayArrow />}
               onClick={() => {
-                // 只调用PlaybackContext的播放控制，状态会通过useEffect同步
-                playbackHandlePlayPause();
+                handleTimelinePlayPause();
               }}
               disabled={!timelineDuration || timelineDuration === 0}
             />

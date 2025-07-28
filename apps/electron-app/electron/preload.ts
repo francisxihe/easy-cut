@@ -18,7 +18,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     // 监听渲染进度
     onRenderProgress: (callback: (progress: any) => void) => {
       ipcRenderer.on("video:renderProgress", (_, progress) =>
-        callback(progress),
+        callback(progress)
       );
     },
     onRenderDone: (callback: () => void) => {

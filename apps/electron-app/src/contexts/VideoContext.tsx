@@ -10,6 +10,9 @@ import React, {
 export interface VideoFile {
   id: string;
   file: string;
+  originalFile?: string; // 原始文件路径
+  isProcessed?: boolean; // 是否已预处理
+  processingStatus?: 'pending' | 'processing' | 'completed' | 'failed';
   properties: {
     duration?: number;
     seek?: number;
@@ -64,6 +67,10 @@ type VideoAction =
   | {
       type: "UPDATE_VIDEO_FILE";
       payload: { id: string; properties: Partial<VideoFile["properties"]> };
+    }
+  | {
+      type: "UPDATE_VIDEO_FILE_STATUS";
+      payload: { id: string; updates: Partial<Pick<VideoFile, 'isProcessed' | 'processingStatus' | 'file' | 'originalFile'>> };
     }
   | { type: "SET_WORK_FILES"; payload: VideoFile[] }
   | { type: "SELECT_FILE"; payload: string | null }
@@ -125,6 +132,19 @@ function videoReducer(state: VideoState, action: VideoAction): VideoState {
                   ...file.properties,
                   ...action.payload.properties,
                 },
+              }
+            : file
+        ),
+      };
+
+    case "UPDATE_VIDEO_FILE_STATUS":
+      return {
+        ...state,
+        workFiles: state.workFiles.map((file) =>
+          file.id === action.payload.id
+            ? {
+                ...file,
+                ...action.payload.updates,
               }
             : file
         ),
@@ -193,14 +213,21 @@ interface VideoContextType {
     id: string,
     properties: Partial<VideoFile["properties"]>
   ) => void;
+  updateVideoFileStatus: (
+    id: string,
+    updates: Partial<Pick<VideoFile, 'isProcessed' | 'processingStatus' | 'file' | 'originalFile'>>
+  ) => void;
   selectFile: (id: string | null) => void;
   updateScheme: (scheme: Partial<RenderScheme>) => void;
   setOutputPath: (path: string) => void;
   startRender: () => Promise<void>;
   resetProject: () => void;
 
+  // 视频预处理方法
+  preprocessVideoFile: (fileId: string) => Promise<void>;
+  
   // 预览方法
-  previewFile: (fileId: string) => Promise<void>;
+  previewFile: (fileId: string, onPreviewStart?: () => void) => Promise<void>;
   clearPreview: () => void;
 }
 
@@ -265,11 +292,19 @@ export function VideoProvider({ children }: { children: ReactNode }) {
       const videoFile: VideoFile = {
         id: Date.now().toString(),
         file,
+        originalFile: file,
+        isProcessed: false,
+        processingStatus: 'pending',
         properties: {
           duration: meta.format?.duration,
         },
       };
       dispatch({ type: "ADD_VIDEO_FILE", payload: videoFile });
+      
+      // 自动开始预处理，直接传递videoFile对象
+      setTimeout(() => {
+        preprocessVideoFileWithData(videoFile);
+      }, 100);
     } catch (error) {
       console.error("获取视频元数据失败:", error);
     }
@@ -286,8 +321,70 @@ export function VideoProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "UPDATE_VIDEO_FILE", payload: { id, properties } });
   };
 
+  const updateVideoFileStatus = (
+    id: string,
+    updates: Partial<Pick<VideoFile, 'isProcessed' | 'processingStatus' | 'file' | 'originalFile'>>
+  ) => {
+    dispatch({ type: "UPDATE_VIDEO_FILE_STATUS", payload: { id, updates } });
+  };
+
   const selectFile = (id: string | null) => {
     dispatch({ type: "SELECT_FILE", payload: id });
+  };
+
+  // 内部预处理方法，直接接受videoFile对象
+  const preprocessVideoFileWithData = async (videoFile: VideoFile) => {
+    if (!videoFile || !videoFile.originalFile) {
+      console.error('视频文件数据无效:', videoFile?.id);
+      return;
+    }
+
+    try {
+      // 更新状态为处理中
+      updateVideoFileStatus(videoFile.id, { processingStatus: 'processing' });
+      
+      // 检查文件格式是否需要转换
+      const fileExtension = videoFile.originalFile.split('.').pop()?.toLowerCase();
+      const needsConversion = !['mp4', 'webm'].includes(fileExtension || '');
+      
+      if (needsConversion) {
+         // TODO: 集成FFmpeg进行视频预处理
+         // 暂时模拟预处理过程
+         console.log('需要预处理视频格式:', fileExtension);
+         
+         // 模拟异步处理
+         await new Promise(resolve => setTimeout(resolve, 1000));
+         
+         // 暂时使用原文件，实际应该是转换后的文件路径
+         updateVideoFileStatus(videoFile.id, {
+           isProcessed: true,
+           processingStatus: 'completed'
+         });
+         
+         console.log('视频预处理完成（模拟）');
+       } else {
+        // 不需要转换，直接标记为已处理
+        updateVideoFileStatus(videoFile.id, {
+          isProcessed: true,
+          processingStatus: 'completed'
+        });
+        
+        console.log('视频格式已兼容，无需预处理');
+      }
+    } catch (error) {
+      console.error('视频预处理失败:', error);
+      updateVideoFileStatus(videoFile.id, { processingStatus: 'failed' });
+    }
+  };
+
+  // 视频预处理方法（公开接口）
+  const preprocessVideoFile = async (fileId: string) => {
+    const videoFile = state.workFiles.find(f => f.id === fileId);
+    if (!videoFile) {
+      console.error('找不到要预处理的视频文件:', fileId);
+      return;
+    }
+    await preprocessVideoFileWithData(videoFile);
   };
 
   const updateScheme = (scheme: Partial<RenderScheme>) => {
@@ -324,7 +421,7 @@ export function VideoProvider({ children }: { children: ReactNode }) {
   };
 
   // 预览方法
-  const previewFile = async (fileId: string) => {
+  const previewFile = async (fileId: string, onPreviewStart?: () => void) => {
     const file = state.workFiles.find((f) => f.id === fileId);
     if (file && window.electronAPI) {
       try {
@@ -332,6 +429,11 @@ export function VideoProvider({ children }: { children: ReactNode }) {
         const fileUrl = `file://${file.file}`;
         dispatch({ type: "SET_PREVIEW_URL", payload: fileUrl });
         dispatch({ type: "SELECT_FILE", payload: fileId });
+        
+        // 触发Sources播放回调
+        if (onPreviewStart) {
+          onPreviewStart();
+        }
       } catch (error) {
         console.error("获取文件URL失败:", error);
       }
@@ -348,10 +450,12 @@ export function VideoProvider({ children }: { children: ReactNode }) {
     addVideoFile,
     removeVideoFile,
     updateVideoFile,
+    updateVideoFileStatus,
+    preprocessVideoFile,
     selectFile,
     updateScheme,
-    setOutputPath,
     startRender,
+    setOutputPath,
     resetProject,
     previewFile,
     clearPreview,
