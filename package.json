@@ -1,7 +1,7 @@
 {
   "name": "easy-cut",
   "version": "1.0.0",
-  "description": "FFmpeg video editor built with Electron and Turborepo",
+  "description": "FFmpeg video editor built with Electron",
   "private": true,
   "workspaces": [
     "apps/*",

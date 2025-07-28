@@ -65,7 +65,6 @@ typings/
 
 # large binary files and workdir
 /app/bin
-/apps/electron-app/bin
 dist/
 dist-electron/
 build/
