@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useRef, useEffect } from "react";
+import React, { createContext, useContext, useReducer, useRef, useEffect, useCallback } from "react";
 
 // 播放源类型
 type PlaybackSource = 'sources' | 'timeline';
@@ -112,17 +112,17 @@ export const PlaybackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // 状态更新函数
-  const setCurrentTime = (time: number) => {
+  const setCurrentTime = useCallback((time: number) => {
     dispatch({ type: "SET_CURRENT_TIME", payload: time });
-  };
+  }, []);
 
-  const setDuration = (duration: number) => {
+  const setDuration = useCallback((duration: number) => {
     dispatch({ type: "SET_DURATION", payload: duration });
-  };
+  }, []);
 
-  const setPlaying = (playing: boolean) => {
+  const setPlaying = useCallback((playing: boolean) => {
     dispatch({ type: "SET_PLAYING", payload: playing });
-  };
+  }, []);
 
   const setVolume = (volume: number) => {
     dispatch({ type: "SET_VOLUME", payload: volume });
@@ -153,27 +153,27 @@ export const PlaybackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   // 播放控制函数
-  const play = () => {
+  const play = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.play();
       setPlaying(true);
     }
-  };
+  }, [setPlaying]);
 
-  const pause = () => {
+  const pause = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.pause();
       setPlaying(false);
     }
-  };
+  }, [setPlaying]);
 
-  const handlePlayPause = () => {
+  const handlePlayPause = useCallback(() => {
     if (state.isPlaying) {
       pause();
     } else {
       play();
     }
-  };
+  }, [state.isPlaying, pause, play]);
 
   // Sources播放 - 播放当前选中的视频文件
   const playFromSources = () => {
@@ -191,12 +191,12 @@ export const PlaybackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     play();
   };
 
-  const seek = (time: number) => {
+  const seek = useCallback((time: number) => {
     if (videoRef.current) {
       videoRef.current.currentTime = time;
       setCurrentTime(time);
     }
-  };
+  }, [setCurrentTime]);
 
   // 格式化时间显示
   const formatTime = (time: number) => {

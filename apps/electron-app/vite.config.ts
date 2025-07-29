@@ -25,7 +25,7 @@ export default async () => {
       react(),
       electron([
         {
-          entry: "electron/main.ts",
+          entry: "electron/main/main.ts",
           onstart(options) {
             if (options.startup) {
               options.startup();

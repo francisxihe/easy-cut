@@ -5,14 +5,14 @@ import os from "os";
 import { FileServer } from "./fileServer";
 
 // 导入业务模块
-const VideoManager = require("../videoManager.js");
-const PluginManager = require("../plugins.js");
-const PreviewServer = require("../previewServer.js");
+import { VideoManager } from "../modules/VideoManager";
+import { PluginManager } from "../modules/PluginManager";
+import { PreviewServer } from "../modules/PreviewServer";
 
 export interface BusinessModules {
-  vidManager: any;
-  pluginMan: any;
-  server: any;
+  vidManager: VideoManager;
+  pluginMan: PluginManager;
+  server: PreviewServer;
   fileServer: FileServer;
 }
 
@@ -51,14 +51,14 @@ export class BusinessModuleInitializer {
       vidManager,
       pluginMan,
       server,
-      fileServer
+      fileServer,
     };
   }
 
-  private initializeVideoManager(appPath: string, workdir: string): any {
+  private initializeVideoManager(appPath: string, workdir: string): VideoManager {
     try {
       let ffmpegPath, ffprobePath;
-      
+
       if (this.isDev) {
         // 开发环境：使用系统安装的FFmpeg
         console.log("Development mode: Using system FFmpeg");
@@ -74,22 +74,22 @@ export class BusinessModuleInitializer {
           ffprobePath = join(appPath, "bin/win64/ffprobe.exe");
         } else {
           throw new Error(
-            "This platform or architecture is currently not supported.",
+            "This platform or architecture is currently not supported."
           );
         }
       }
-      
+
       const vidManager = new VideoManager(ffmpegPath, ffprobePath, workdir);
-      
+
       // 设置默认渲染方案（只有在vidManager成功创建后才设置）
-      vidManager.scheme = {
+      vidManager.setScheme({
         size: "1280x720",
         format: ".mp4",
         codec: "libx264",
-        bitrate: 1000,
+        bitrate: "1000k",
         fps: 24,
         pad: true,
-      };
+      });
 
       return vidManager;
     } catch (err: any) {

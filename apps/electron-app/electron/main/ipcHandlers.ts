@@ -28,6 +28,7 @@ export class IPCHandlers {
     this.registerPreviewHandlers();
     this.registerDialogHandlers();
     this.registerWindowHandlers();
+    this.registerProjectHandlers();
   }
 
   private registerVideoHandlers(): void {
@@ -144,6 +145,65 @@ export class IPCHandlers {
     ipcMain.handle("window:sendToMain", (_, message) => {
       const mainWindow = this.getMainWindow();
       mainWindow?.webContents.send("window:relay", message);
+    });
+  }
+
+  private registerProjectHandlers(): void {
+    // IPC 处理程序 - 项目管理
+    ipcMain.handle("project:create", async (_, projectData) => {
+      try {
+        // 这里可以实现项目文件的创建逻辑
+        // 暂时返回成功状态
+        console.log("创建项目:", projectData);
+        return { success: true, path: projectData.path };
+      } catch (error) {
+        console.error("创建项目失败:", error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle("project:load", async (_, projectPath) => {
+      try {
+        // 这里可以实现项目文件的加载逻辑
+        console.log("加载项目:", projectPath);
+        return { success: true, data: {} };
+      } catch (error) {
+        console.error("加载项目失败:", error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle("project:save", async (_, projectPath, projectData) => {
+      try {
+        // 这里可以实现项目文件的保存逻辑
+        console.log("保存项目:", projectPath, projectData);
+        return { success: true };
+      } catch (error) {
+        console.error("保存项目失败:", error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle("project:getRecent", async () => {
+      try {
+        // 这里可以实现获取最近项目的逻辑
+        // 暂时返回空数组
+        return [];
+      } catch (error) {
+        console.error("获取最近项目失败:", error);
+        return [];
+      }
+    });
+
+    ipcMain.handle("project:removeFromRecent", async (_, projectId) => {
+      try {
+        // 这里可以实现从最近项目中移除的逻辑
+        console.log("从最近项目中移除:", projectId);
+        return { success: true };
+      } catch (error) {
+        console.error("移除最近项目失败:", error);
+        throw error;
+      }
     });
   }
 }

@@ -61,6 +61,19 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.on("window:relay", (_, message) => callback(message));
     },
   },
+
+  // 项目管理 API
+  project: {
+    create: (projectData: { name: string; path: string }) =>
+      ipcRenderer.invoke("project:create", projectData),
+    load: (projectPath: string) =>
+      ipcRenderer.invoke("project:load", projectPath),
+    save: (projectPath: string, projectData: any) =>
+      ipcRenderer.invoke("project:save", projectPath, projectData),
+    getRecent: () => ipcRenderer.invoke("project:getRecent"),
+    removeFromRecent: (projectId: string) =>
+      ipcRenderer.invoke("project:removeFromRecent", projectId),
+  },
 });
 
 // Expose Node.js APIs for development

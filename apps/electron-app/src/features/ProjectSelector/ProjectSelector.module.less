@@ -1,0 +1,130 @@
+.project-selector {
+  padding: 24px;
+
+  .welcome-section {
+    text-align: center;
+    margin-bottom: 32px;
+
+    h4 {
+      margin-bottom: 8px;
+      color: var(--color-text-1);
+    }
+  }
+
+  .actions-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+
+    .action-card {
+      width: 200px;
+      height: 120px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+
+      &:hover {
+        border-color: var(--color-primary-6);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      }
+
+      .action-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-align: center;
+
+        .action-icon {
+          font-size: 32px;
+          color: var(--color-primary-6);
+          margin-bottom: 8px;
+        }
+
+        h6 {
+          margin: 8px 0 4px 0;
+          color: var(--color-text-1);
+        }
+
+        span {
+          font-size: 12px;
+          color: var(--color-text-3);
+        }
+      }
+    }
+  }
+
+  .create-form {
+    padding: 16px 0;
+
+    h6 {
+      margin-bottom: 16px;
+      color: var(--color-text-1);
+    }
+  }
+
+  .recent-projects {
+    .project-list {
+      max-height: 300px;
+      overflow-y: auto;
+
+      .project-item {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        padding: 12px;
+
+        &:hover {
+          background-color: var(--color-fill-2);
+        }
+
+        .project-icon {
+          font-size: 24px;
+          color: var(--color-primary-6);
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 24px 0;
+  }
+}
+
+.project-selector-modal {
+  .arco-modal-header {
+    text-align: center;
+    border-bottom: 1px solid var(--color-border-2);
+  }
+
+  .arco-modal-body {
+    padding: 0;
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .project-selector {
+    .actions-section {
+      flex-direction: column;
+      align-items: center;
+
+      .action-card {
+        margin-bottom: 16px;
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  }
+
+  .project-selector-modal {
+    .arco-modal {
+      width: 90% !important;
+      max-width: 500px;
+    }
+  }
+}

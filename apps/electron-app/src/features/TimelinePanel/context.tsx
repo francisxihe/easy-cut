@@ -4,6 +4,7 @@ import React, {
   useReducer,
   ReactNode,
   useEffect,
+  useCallback,
 } from "react";
 import { useVideo } from "../../contexts/VideoContext";
 
@@ -455,26 +456,26 @@ export function TimelineProvider({
   };
 
   // 播放控制
-  const setPosition = (position: number) => {
+  const setPosition = useCallback((position: number) => {
     dispatch({ type: "SET_POSITION", payload: position });
-  };
+  }, [dispatch]);
 
-  const setPlaying = (playing: boolean) => {
+  const setPlaying = useCallback((playing: boolean) => {
     dispatch({ type: "SET_PLAYING", payload: playing });
-  };
+  }, [dispatch]);
 
-  const play = () => {
+  const play = useCallback(() => {
     dispatch({ type: "SET_PLAYING", payload: true });
-  };
+  }, [dispatch]);
 
-  const pause = () => {
+  const pause = useCallback(() => {
     dispatch({ type: "SET_PLAYING", payload: false });
-  };
+  }, [dispatch]);
 
-  const stop = () => {
+  const stop = useCallback(() => {
     dispatch({ type: "SET_PLAYING", payload: false });
     dispatch({ type: "SET_POSITION", payload: 0 });
-  };
+  }, [dispatch]);
 
   // 视图控制
   const setZoom = (zoom: number) => {

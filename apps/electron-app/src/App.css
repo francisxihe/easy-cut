@@ -7,6 +7,35 @@
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-loading {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-1);
+}
+
+.loading-content {
+  text-align: center;
+  color: var(--color-text-2);
+}
+
+.loading-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+.loading-content p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-3);
 }
 
 /* 拖拽时的全局样式 */

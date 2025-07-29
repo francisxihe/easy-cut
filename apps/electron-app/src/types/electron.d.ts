@@ -37,6 +37,15 @@ export interface ElectronAPI {
     sendToMain: (message: any) => Promise<void>;
     onRelay: (callback: (message: any) => void) => void;
   };
+
+  // 项目管理 API
+  project: {
+    create: (projectData: { name: string; path: string }) => Promise<{ success: boolean; path: string }>;
+    load: (projectPath: string) => Promise<{ success: boolean; data: any }>;
+    save: (projectPath: string, projectData: any) => Promise<{ success: boolean }>;
+    getRecent: () => Promise<Array<{ id: string; name: string; path: string; lastModified: number }>>;
+    removeFromRecent: (projectId: string) => Promise<{ success: boolean }>;
+  };
 }
 
 declare global {
