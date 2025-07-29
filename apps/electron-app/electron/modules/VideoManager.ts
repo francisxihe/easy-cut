@@ -1,5 +1,6 @@
 import * as ffmpeg from 'fluent-ffmpeg';
 import * as fs from 'fs';
+import * as path from 'path';
 
 // 工作文件接口
 interface WorkFile {
@@ -82,6 +83,49 @@ export class VideoManager {
       properties: properties,
     };
     this.workFiles.push(workFile);
+  }
+
+  // 将视频文件复制到项目目录并返回新路径
+  async copyVideoToProject(originalPath: string, projectPath: string): Promise<string> {
+    try {
+      // 确保项目目录存在
+      const projectDir = path.dirname(projectPath);
+      const videosDir = path.join(projectDir, 'videos');
+      
+      if (!fs.existsSync(videosDir)) {
+        fs.mkdirSync(videosDir, { recursive: true });
+      }
+
+      // 生成唯一的文件名
+      const originalName = path.basename(originalPath);
+      const ext = path.extname(originalName);
+      const nameWithoutExt = path.basename(originalName, ext);
+      const timestamp = Date.now();
+      const newFileName = `${nameWithoutExt}_${timestamp}${ext}`;
+      const newPath = path.join(videosDir, newFileName);
+
+      // 复制文件
+      await this.copyFile(originalPath, newPath);
+      
+      return newPath;
+    } catch (error) {
+      console.error('复制视频文件到项目目录失败:', error);
+      throw error;
+    }
+  }
+
+  // 异步文件复制方法
+  private copyFile(src: string, dest: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const readStream = fs.createReadStream(src);
+      const writeStream = fs.createWriteStream(dest);
+      
+      readStream.on('error', reject);
+      writeStream.on('error', reject);
+      writeStream.on('finish', resolve);
+      
+      readStream.pipe(writeStream);
+    });
   }
 
   private setCallbacks(command: any, callbacks: RenderCallbacks): void {

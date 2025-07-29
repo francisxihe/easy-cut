@@ -5,6 +5,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import { useProject } from './ProjectContext';
 
 // 类型定义
 export interface VideoFile {
@@ -235,6 +236,7 @@ const VideoContext = createContext<VideoContextType | undefined>(undefined);
 
 export function VideoProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(videoReducer, initialState);
+  const { currentProjectPath } = useProject();
 
   // 监听渲染事件
   useEffect(() => {
@@ -289,10 +291,29 @@ export function VideoProvider({ children }: { children: ReactNode }) {
   const addVideoFile = async (file: string) => {
     try {
       const meta = await window.electronAPI.video.getMeta(file);
+      
+      // 获取当前项目路径
+      let cachedFilePath = file;
+      
+      if (currentProjectPath) {
+        try {
+          // 将视频文件复制到项目目录
+          const copyResult = await window.electronAPI.video.copyToProject(file, currentProjectPath);
+          if (copyResult.success && copyResult.newPath) {
+            cachedFilePath = copyResult.newPath;
+            console.log('视频文件已缓存到项目目录:', cachedFilePath);
+          } else {
+            console.warn('复制视频文件失败，使用原始路径:', copyResult.error);
+          }
+        } catch (error) {
+          console.warn('复制视频文件时出错，使用原始路径:', error);
+        }
+      }
+      
       const videoFile: VideoFile = {
         id: Date.now().toString(),
-        file,
-        originalFile: file,
+        file: cachedFilePath, // 使用缓存后的文件路径
+        originalFile: file, // 保留原始文件路径
         isProcessed: false,
         processingStatus: 'pending',
         properties: {

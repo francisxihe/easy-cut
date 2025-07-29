@@ -53,6 +53,16 @@ export class IPCHandlers {
       this.vidManager.workFiles = workFiles;
     });
 
+    ipcMain.handle("video:copyToProject", async (_, originalPath: string, projectPath: string) => {
+      try {
+        const newPath = await this.vidManager.copyVideoToProject(originalPath, projectPath);
+        return { success: true, newPath };
+      } catch (error) {
+        console.error('复制视频文件失败:', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
     ipcMain.handle("video:setOutput", (_, output) => {
       this.vidManager.masterOutput = output;
     });

@@ -6,6 +6,8 @@ export interface ElectronAPI {
     setWorkFiles: (workFiles: any[]) => Promise<void>;
     setOutput: (output: string) => Promise<void>;
     render: () => Promise<void>;
+    getFileUrl: (filePath: string) => Promise<string>;
+    copyToProject: (originalPath: string, projectPath: string) => Promise<{ success: boolean; newPath?: string; error?: string }>;
 
     // 监听渲染进度
     onRenderProgress: (callback: (progress: any) => void) => void;

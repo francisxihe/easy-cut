@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     render: () => ipcRenderer.invoke("video:render"),
     getFileUrl: (filePath: string) =>
       ipcRenderer.invoke("video:getFileUrl", filePath),
+    copyToProject: (originalPath: string, projectPath: string) => ipcRenderer.invoke("video:copyToProject", originalPath, projectPath),
 
     // 监听渲染进度
     onRenderProgress: (callback: (progress: any) => void) => {
